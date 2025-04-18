@@ -1,0 +1,56 @@
+internet
+hub namespace: {
+  firewall (pfsense)
+  waf (BunkerWeb)
+  api gateway (kong)
+  reverse proxy (nginx)
+}
+inbound namespace: {
+  SFTP
+  Node-Red
+}
+data namespace: {
+  postgressSQL
+}
+devops namespace: {
+  gitea
+  jekins
+  argocd
+  sonarqube
+}
+spoke 1 namespace: {
+  app 1
+  app 2 that needs postgressSQL
+  api 1
+}
+spoke 2 namespace: {
+  api 2
+  app 3
+}
+internet -> hub namespace.firewall (pfsense)
+# hub mappings
+hub namespace.firewall (pfsense) -> hub namespace.waf (BunkerWeb)
+hub namespace.waf (BunkerWeb) -> hub namespace.api gateway (kong)
+hub namespace.waf (BunkerWeb) -> hub namespace.reverse proxy (nginx)
+hub namespace.waf (BunkerWeb) -> inbound namespace.SFTP
+hub namespace.waf (BunkerWeb) -> data namespace.postgressSQL
+hub namespace.api gateway (kong) -> spoke 1 namespace.api 1
+hub namespace.api gateway (kong) -> spoke 2 namespace.api 2
+hub namespace.reverse proxy (nginx) -> devops namespace.gitea
+hub namespace.reverse proxy (nginx) -> spoke 1 namespace.app 1
+hub namespace.reverse proxy (nginx) -> spoke 1 namespace.app 2 that needs postgressSQL
+hub namespace.reverse proxy (nginx) -> spoke 2 namespace.app 3
+
+spoke 1 namespace.app 2 that needs postgressSQL <-> data namespace.postgressSQL
+
+# devops flow
+devops namespace.gitea -> devops namespace.jekins
+devops namespace.jekins -> devops namespace.sonarqube
+devops namespace.jekins -> devops namespace.argocd
+devops namespace.argocd -> controle plane
+
+# inbound data
+inbound namespace.SFTP -> inbound namespace.Node-Red
+inbound namespace.Node-Red -> data namespace.postgressSQL
+inbound namespace.Node-Red -> spoke 1 namespace.app 1
+inbound namespace.Node-Red -> spoke 2 namespace.api 2
